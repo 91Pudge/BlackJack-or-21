@@ -5,17 +5,28 @@
 
 const double initialMoney = 100.00;
 
-static void dealerCards(Random randomGenerator, out int dealerThird, out int dealerHand)
-{
-    var dealerCard1 = randomGenerator.Next(1, 10);
-    var dealerCard2 = randomGenerator.Next(1, 10);
-    dealerThird = randomGenerator.Next(1, 10);
-    dealerHand = dealerCard1 + dealerCard2;
-    Console.ForegroundColor = ConsoleColor.Red;
 
-    Console.WriteLine($"-Dealer 1st card is {dealerCard1}, dealer 2nd card is {dealerCard2}");
-    Console.WriteLine($"-Dealer total {dealerHand}");
+
+static int dealerTwist(int totalCardScore, int dealerThird, int dealerHand)
+{
+    if (dealerHand < 15 || dealerHand > totalCardScore)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"-Dealer takes another card");
+        Console.WriteLine($"-The 3rd card is {dealerThird}");
+        Console.ResetColor();
+
+        dealerHand += dealerThird;
+    }
+    else if (dealerHand > 21)
+    {
+        Console.WriteLine($"Dealers hand is over 21- You win... \n Press any key to quit");
+        Console.ReadKey();
+    }
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine($"-Dealer1 hand is {dealerHand}");
     Console.ResetColor();
+    return dealerHand;
 }
 
 int firstCardScore, secondCardScore, totalCardScore, thirdCardScore;
@@ -28,22 +39,20 @@ string playerSkillLevel = "Beginner";
 string playerRole = "Player";
 int age = 0;
 
-userInput(out totalGamesPlayed, out playerNickName, out name, out age);
-
-playerSkillLevel = playerSkill(totalGamesPlayed, ref playerNickName);
+// var playerTotalCardScore = 0;
+// var dealerTotalCardScore = 0;
 
 Console.Title = "BlackJackLight";
+// takes user name age total games played and nickname
+userInput(out totalGamesPlayed, out playerNickName, out name, out age);
+playerSkill(totalGamesPlayed, ref playerNickName);
 PrintLogo();
-
 PrintPlayerMenu(favoriteCard, playerNickName, name, playerSkillLevel, playerRole, age);
-
 GameOptions();
 
 Console.WriteLine("\nPlease type in menu option number and press enter");
-string selectedMenuOption = Console.ReadLine();
-
+string? selectedMenuOption = Console.ReadLine();
 switch (selectedMenuOption)
-
 
 {
     case "1":
@@ -64,24 +73,7 @@ switch (selectedMenuOption)
 
         int dealerThird, dealerHand;
         dealerCards(randomGenerator, out dealerThird, out dealerHand);
-
-        if (dealerHand < 15 || dealerHand > totalCardScore)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"-Dealer takes another card");
-            Console.WriteLine($"-The 3rd card is {dealerThird}");
-            Console.ResetColor();
-
-            dealerHand += dealerThird;
-        }
-        else if (dealerHand > 21)
-        {
-            Console.WriteLine($"Dealers hand is over 21- You win... \n Press any key to quit");
-            Console.ReadKey();
-        }
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"-Dealer1 hand is {dealerHand}");
-        Console.ResetColor();
+        dealerTwist(totalCardScore, dealerThird, dealerHand);
 
         if (totalCardScore <= dealerHand)
         {
@@ -89,8 +81,7 @@ switch (selectedMenuOption)
             Console.ReadKey();
             return;
         }
-
-        if (totalCardScore == 21)
+        else if (totalCardScore == 21)
         {
             Console.WriteLine("You won with 21");
         }
@@ -108,14 +99,7 @@ switch (selectedMenuOption)
             Console.ReadKey();
         }
 
-        if (totalCardScore > dealerHand && totalCardScore < 22)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"-1Player {name} wins, your hand is {totalCardScore} \n Press any key to quit");
-            Console.ResetColor();
-            Console.ReadKey();
-        }
-
+        ScoreGreaterThanDealers(totalCardScore, name, dealerHand);
 
         break;
     case "2":
@@ -131,9 +115,9 @@ static void PrintLogo()
 {
     Console.BackgroundColor = ConsoleColor.Yellow;
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine(" . ------------.");
-    Console.WriteLine(" /------------/ |");
-    Console.WriteLine("/.-----------/| |");
+    Console.WriteLine("  .------------.");
+    Console.WriteLine(" /-----------/  |");
+    Console.WriteLine("/.----------/ | |");
     Console.WriteLine("| ♥      ♥  | | |");
     Console.WriteLine("| BlackJack | | |");
     Console.WriteLine("|           | | |");
@@ -141,7 +125,7 @@ static void PrintLogo()
     Console.WriteLine("|           | | |");
     Console.WriteLine("| The Game  | | |");
     Console.WriteLine("| ♥      ♥  | / /");
-    Console.WriteLine("\\ ----------/ ");
+    Console.WriteLine(" ------------/ /");
     Console.WriteLine("");
     Console.ResetColor();
 }
@@ -177,11 +161,11 @@ static void userInput(out int totalGamesPlayed, out string? playerNickName, out 
     Console.WriteLine("Please insert name and press enter?");
     name = Console.ReadLine();
     Console.WriteLine("Please insert age and press enter?");
-    age = int.Parse(Console.ReadLine());
+    age = Convert.ToInt32(Console.ReadLine());
     Console.WriteLine("Please insert nickname and press enter?");
     playerNickName = Console.ReadLine();
     Console.WriteLine("Enter how many games played and press enter?");
-    totalGamesPlayed = int.Parse(Console.ReadLine());
+    totalGamesPlayed = Convert.ToInt32(Console.ReadLine());
 }
 
 static string playerSkill(int totalGamesPlayed, ref string? playerNickName)
@@ -217,7 +201,7 @@ static string playerSkill(int totalGamesPlayed, ref string? playerNickName)
 static void resetStats(double initialMoney, ref double playerMoney, ref int totalGamesPlayed, ref string playerSkillLevel)
 {
     Console.WriteLine("-Are you sure you want to reset your stats? \n1. Yes \n2. No");
-    string promptAnswer = Console.ReadLine();
+    string? promptAnswer = Console.ReadLine();
     if (promptAnswer == "1" | promptAnswer == "Yes")
     {
         totalGamesPlayed = 0;
@@ -266,4 +250,34 @@ static int option1(int firstCardScore, int secondCardScore, ref int thirdCardSco
     Console.WriteLine($"Your total card score is {totalCardScore}");
     Console.ResetColor();
     return totalCardScore;
+}
+
+static void dealerCards(Random randomGenerator, out int dealerThird, out int dealerHand)
+{
+    var dealerCard1 = randomGenerator.Next(1, 10);
+    var dealerCard2 = randomGenerator.Next(1, 10);
+    dealerThird = randomGenerator.Next(1, 10);
+    dealerHand = dealerCard1 + dealerCard2 + dealerThird;
+    Console.ForegroundColor = ConsoleColor.Red;
+
+    if (dealerHand == 21)
+    {
+        Console.WriteLine("Dealer wins with 21");
+    }
+    // else if (dealerCard1)
+
+    Console.WriteLine($"-Dealer 1st card is {dealerCard1}, dealer 2nd card is {dealerCard2}");
+    Console.WriteLine($"-Dealer total {dealerHand}");
+    Console.ResetColor();
+}
+
+static void ScoreGreaterThanDealers(int totalCardScore, string? name, int dealerHand)
+{
+    if (totalCardScore > dealerHand && totalCardScore < 22)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"-1Player {name} wins, your hand is {totalCardScore} \n Press any key to quit");
+        Console.ResetColor();
+        Console.ReadKey();
+    }
 }
